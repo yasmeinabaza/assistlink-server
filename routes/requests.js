@@ -125,4 +125,46 @@ router.put("/:id/status", careCenterAuth, async (req, res) => {
   }
 });
 
+
+// ADD MEASUREMENTS
+router.post("/:id/measurements", async (req, res) => {
+  const id = req.params.id;
+  const { height, weight, limbLength, circumference, additionalNotes } = req.body;
+
+  try {
+    const existing = await db.query(
+      "SELECT * FROM measurements WHERE request_id = $1",
+      [id]
+    );
+
+    let result;
+    if (existing.rows.length > 0) {
+      result = await db.query(
+        `UPDATE measurements 
+         SET height = $1, weight = $2, limb_length = $3, circumference = $4, additional_notes = $5
+         WHERE request_id = $6
+         RETURNING *`,
+        [height, weight, limbLength, circumference, additionalNotes, id]
+      );
+    } else {
+      result = await db.query(
+        `INSERT INTO measurements (request_id, height, weight, limb_length, circumference, additional_notes)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [id, height, weight, limbLength, circumference, additionalNotes]
+      );
+    }
+
+    await db.query(
+      `UPDATE requests SET status = 'In Progress' WHERE id = $1 AND status = 'Approved'`,
+      [id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
 export default router;
