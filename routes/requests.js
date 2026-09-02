@@ -84,4 +84,45 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+// UPDATE request status (care center only)
+router.put("/:id/status", careCenterAuth, async (req, res) => {
+  const id = req.params.id;
+  const { status, engineerId } = req.body;
+
+  try {
+    let query = `UPDATE requests SET status = $1`;
+    const params = [status];
+    let paramCount = 2;
+
+    if (status === 'Approved') {
+      query += `, approved_date = CURRENT_DATE`;
+    } else if (status === 'Rejected') {
+      query += `, rejected_date = CURRENT_DATE`;
+    } else if (status === 'Delivered') {
+      query += `, delivered_date = CURRENT_DATE`;
+    }
+
+    if (engineerId) {
+      query += `, engineer_id = $${paramCount}, assigned_date = CURRENT_DATE`;
+      params.push(engineerId);
+      paramCount++;
+    }
+
+    query += ` WHERE id = $${paramCount} RETURNING *`;
+    params.push(id);
+
+    const result = await db.query(query, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
 export default router;
