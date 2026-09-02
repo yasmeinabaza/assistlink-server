@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./routes/users.js";
 import requestRoutes from "./routes/requests.js";
+import careCenterRoutes from "./routes/carecenters.js";
+
 
 
 import db from "./db/db.js";
@@ -26,6 +28,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes);
+app.use("/api/carecenters", careCenterRoutes);
 
 
 app.use((req, res) => {
