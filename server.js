@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import userRoutes from "./routes/users.js";
+import requestRoutes from "./routes/requests.js";
+
 
 import db from "./db/db.js";
 
@@ -23,6 +25,8 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/requests", requestRoutes);
+
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });

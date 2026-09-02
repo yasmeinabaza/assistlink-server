@@ -1,0 +1,87 @@
+import express from "express";
+import db from "../db/db.js";
+import { careCenterAuth } from "../middleware/auth.js";
+
+const router = express.Router();
+
+// GET all requests
+router.get("/", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT r.*, u.name as patient_name, c.name as care_center_name
+       FROM requests r
+       JOIN users u ON r.patient_id = u.id
+       JOIN care_centers c ON r.care_center_id = c.id
+       ORDER BY r.id DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// GET requests by patient
+router.get("/patient/:patientId", async (req, res) => {
+  const patientId = req.params.patientId;
+  try {
+    const result = await db.query(
+      `SELECT r.*, c.name as care_center_name
+       FROM requests r
+       JOIN care_centers c ON r.care_center_id = c.id
+       WHERE r.patient_id = $1
+       ORDER BY r.id DESC`,
+      [patientId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// GET request by ID
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await db.query(
+      `SELECT r.*, u.name as patient_name, u.email as patient_email, u.phone as patient_phone,
+              c.name as care_center_name, c.location as care_center_location
+       FROM requests r
+       JOIN users u ON r.patient_id = u.id
+       JOIN care_centers c ON r.care_center_id = c.id
+       WHERE r.id = $1`,
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// CREATE request
+router.post("/", async (req, res) => {
+  const { patientId, careCenterId, deviceType, reason, affectedArea, notes } = req.body;
+  const timestamp = Date.now().toString().slice(-4);
+  const requestNumber = `REQ-${timestamp}`;
+
+  try {
+    const result = await db.query(
+      `INSERT INTO requests 
+       (request_number, patient_id, care_center_id, device_type, reason, affected_area, notes, status, submitted_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'Submitted', CURRENT_DATE)
+       RETURNING *`,
+      [requestNumber, patientId, careCenterId, deviceType, reason, affectedArea, notes]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+export default router;
