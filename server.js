@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 
 import db from "./db/db.js";
 
+// Import routes
+import authRoutes from "./routes/auth.js";
+
 dotenv.config();
 
 const app = express();
@@ -15,6 +18,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("AssistLink API is running");
 });
+
+// Routes
+app.use("/api/auth", authRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
