@@ -9,6 +9,7 @@ export default function adminAuth(req, res, next) {
   }
 }
 
+// Check if user is care center staff
 export function careCenterAuth(req, res, next) {
   const role = req.headers["x-role"];
   
@@ -19,6 +20,7 @@ export function careCenterAuth(req, res, next) {
   }
 }
 
+// Check if user is engineer
 export function engineerAuth(req, res, next) {
   const role = req.headers["x-role"];
   
