@@ -40,10 +40,7 @@ router.get("/patient/:patientId", async (req, res) => {
   }
 });
 
-// ============================================
-// GET REQUESTS BY ENGINEER (using user_id) 
-// GET /api/requests/engineer/:userId
-// ============================================
+// GET REQUESTS BY ENGINEER (using user_id) - GET /api/requests/engineer/:userId
 router.get("/engineer/:userId", async (req, res) => {
   const userId = req.params.userId;
   try {
