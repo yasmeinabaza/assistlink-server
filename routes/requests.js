@@ -5,7 +5,6 @@ import { careCenterAuth } from "../middleware/auth.js";
 const router = express.Router();
 
 // GET ALL REQUESTS - GET /api/requests
-
 router.get("/", async (req, res) => {
   try {
     const result = await db.query(
@@ -23,7 +22,6 @@ router.get("/", async (req, res) => {
 });
 
 // GET REQUESTS BY PATIENT - GET /api/requests/patient/:patientId
-
 router.get("/patient/:patientId", async (req, res) => {
   const patientId = req.params.patientId;
   try {
@@ -42,7 +40,43 @@ router.get("/patient/:patientId", async (req, res) => {
   }
 });
 
-// GET request by ID
+// ============================================
+// GET REQUESTS BY ENGINEER (using user_id) 
+// GET /api/requests/engineer/:userId
+// ============================================
+router.get("/engineer/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    // First find the engineer_id from the engineers table using user_id
+    const engineerResult = await db.query(
+      `SELECT id FROM engineers WHERE user_id = $1`,
+      [userId]
+    );
+    
+    if (engineerResult.rows.length === 0) {
+      return res.json([]);
+    }
+    
+    const engineerId = engineerResult.rows[0].id;
+    
+    // Now get requests for this engineer
+    const result = await db.query(
+      `SELECT r.*, u.name as patient_name, c.name as care_center_name
+       FROM requests r
+       JOIN users u ON r.patient_id = u.id
+       JOIN care_centers c ON r.care_center_id = c.id
+       WHERE r.engineer_id = $1
+       ORDER BY r.id DESC`,
+      [engineerId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error in /engineer/:userId:", error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// GET request by ID - GET /api/requests/:id
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
@@ -66,7 +100,6 @@ router.get("/:id", async (req, res) => {
 });
 
 // CREATE REQUEST - POST /api/requests
-
 router.post("/", async (req, res) => {
   const { patientId, careCenterId, deviceType, reason, affectedArea, notes } = req.body;
   const timestamp = Date.now().toString().slice(-4);
@@ -87,9 +120,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 // UPDATE REQUEST STATUS - PUT /api/requests/:id/status (care center only)
-
 router.put("/:id/status", careCenterAuth, async (req, res) => {
   const id = req.params.id;
   const { status, engineerId } = req.body;
@@ -129,9 +160,7 @@ router.put("/:id/status", careCenterAuth, async (req, res) => {
   }
 });
 
-
 // ADD MEASUREMENTS - POST /api/requests/:id/measurements
-
 router.post("/:id/measurements", async (req, res) => {
   const id = req.params.id;
   const { height, weight, limbLength, circumference, additionalNotes } = req.body;

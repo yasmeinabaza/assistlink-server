@@ -396,21 +396,18 @@ SELECT 'Device References: ' || COUNT(*) FROM device_references;
 
 
 
+-- Update password for all test users
+UPDATE users 
+SET password_hash = '$2b$10$xV4NORvr6EEC2o.nRtr2F.r1BP7YpllT91HqfuqGWUQaf3cMSz/z.'
+WHERE email IN (
+    'amara.osei@assistlink.com',
+    'admin@assistlink.com',
+    'sarah.johnson@email.com',
+    'm.tran@email.com',
+    'g.wambui@email.com',
+    'john.kamau@assistlink.com',
+    'mary.akinyi@assistlink.com',
+    'james.okafor@assistlink.com'
+);
 
 
--- -- See all users
--- SELECT id, name, email, role, status FROM users ORDER BY id;
-
--- -- See all requests with patient names
--- SELECT r.id, r.request_number, u.name AS patient, r.device_type, r.status, r.submitted_date
--- FROM requests r
--- JOIN users u ON r.patient_id = u.id
--- ORDER BY r.id;
-
--- -- See all care centers
--- SELECT * FROM care_centers;
-
--- -- See all engineers with user info
--- SELECT e.id, u.name, e.specialization, e.status
--- FROM engineers e
--- JOIN users u ON e.user_id = u.id;
