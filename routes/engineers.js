@@ -4,7 +4,8 @@ import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET all engineers
+// GET ALL ENGINEERS - GET /api/engineers
+
 router.get("/", async (req, res) => {
   try {
     const result = await db.query(
@@ -20,7 +21,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET engineer by ID
+// GET ENGINEER BY ID - GET /api/engineers/:id
+
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
@@ -41,7 +43,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// CREATE engineer (admin only)
+// CREATE ENGINEER - POST /api/engineers (admin only)
+
 router.post("/", adminAuth, async (req, res) => {
   const { userId, specialization, status } = req.body;
 
@@ -59,7 +62,8 @@ router.post("/", adminAuth, async (req, res) => {
   }
 });
 
-// UPDATE engineer (admin only)
+// UPDATE ENGINEER - PUT /api/engineers/:id (admin only)
+
 router.put("/:id", adminAuth, async (req, res) => {
   const id = req.params.id;
   const { specialization, status } = req.body;
@@ -83,7 +87,8 @@ router.put("/:id", adminAuth, async (req, res) => {
   }
 });
 
-// DELETE engineer (admin only)
+// DELETE ENGINEER - DELETE /api/engineers/:id (admin only)
+
 router.delete("/:id", adminAuth, async (req, res) => {
   const id = req.params.id;
 

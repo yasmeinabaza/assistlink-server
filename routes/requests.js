@@ -4,7 +4,8 @@ import { careCenterAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET all requests
+// GET ALL REQUESTS - GET /api/requests
+
 router.get("/", async (req, res) => {
   try {
     const result = await db.query(
@@ -21,7 +22,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET requests by patient
+// GET REQUESTS BY PATIENT - GET /api/requests/patient/:patientId
+
 router.get("/patient/:patientId", async (req, res) => {
   const patientId = req.params.patientId;
   try {
@@ -63,7 +65,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// CREATE request
+// CREATE REQUEST - POST /api/requests
+
 router.post("/", async (req, res) => {
   const { patientId, careCenterId, deviceType, reason, affectedArea, notes } = req.body;
   const timestamp = Date.now().toString().slice(-4);
@@ -85,7 +88,8 @@ router.post("/", async (req, res) => {
 });
 
 
-// UPDATE request status (care center only)
+// UPDATE REQUEST STATUS - PUT /api/requests/:id/status (care center only)
+
 router.put("/:id/status", careCenterAuth, async (req, res) => {
   const id = req.params.id;
   const { status, engineerId } = req.body;
@@ -126,7 +130,8 @@ router.put("/:id/status", careCenterAuth, async (req, res) => {
 });
 
 
-// ADD MEASUREMENTS
+// ADD MEASUREMENTS - POST /api/requests/:id/measurements
+
 router.post("/:id/measurements", async (req, res) => {
   const id = req.params.id;
   const { height, weight, limbLength, circumference, additionalNotes } = req.body;

@@ -4,7 +4,8 @@ import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET all care centers
+// GET ALL CARE CENTERS - GET /api/carecenters
+
 router.get("/", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM care_centers ORDER BY id");
@@ -15,7 +16,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET care center by ID
+// GET CARE CENTER BY ID - GET /api/carecenters/:id
+
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
@@ -30,7 +32,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// CREATE care center (admin only)
+// CREATE CARE CENTER - POST /api/carecenters (admin only)
+
 router.post("/", adminAuth, async (req, res) => {
   const { name, location, phone, email, address, description } = req.body;
 
@@ -48,8 +51,9 @@ router.post("/", adminAuth, async (req, res) => {
   }
 });
 
-// UPDATE care center (admin only)
+// UPDATE CARE CENTER - PUT /api/carecenters/:id (admin only)
 router.put("/:id", adminAuth, async (req, res) => {
+
   const id = req.params.id;
   const { name, location, phone, email, address, description } = req.body;
 
@@ -76,7 +80,8 @@ router.put("/:id", adminAuth, async (req, res) => {
   }
 });
 
-// DELETE care center (admin only)
+// DELETE CARE CENTER - DELETE /api/carecenters/:id (admin only)
+
 router.delete("/:id", adminAuth, async (req, res) => {
   const id = req.params.id;
 

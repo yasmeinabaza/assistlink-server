@@ -4,11 +4,11 @@ import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET all users (admin only)
+// GET ALL USERS - GET /api/users (admin only)
 router.get("/", adminAuth, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id, name, email, phone, role, status, care_center_id, created_at
+      `SELECT id, name, email, phone, role, status, care_center_id
        FROM users ORDER BY id`
     );
     res.json(result.rows);
@@ -18,12 +18,29 @@ router.get("/", adminAuth, async (req, res) => {
   }
 });
 
-// GET user by ID
+// GET PATIENTS - GET /api/users/patients
+
+router.get("/patients", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, name, email, phone, role, status, care_center_id
+       FROM users WHERE role = 'patient' ORDER BY id`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+
+// GET USER BY ID - GET /api/users/:id
+
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const result = await db.query(
-      `SELECT id, name, email, phone, role, status, care_center_id, created_at
+      `SELECT id, name, email, phone, role, status, care_center_id
        FROM users WHERE id = $1`,
       [id]
     );
@@ -37,7 +54,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// UPDATE user (admin only)
+// UPDATE USER - PUT /api/users/:id (admin only)
+
 router.put("/:id", adminAuth, async (req, res) => {
   const { name, email, phone, role, status, careCenterId } = req.body;
   const id = req.params.id;
@@ -66,7 +84,8 @@ router.put("/:id", adminAuth, async (req, res) => {
   }
 });
 
-// DELETE user (admin only)
+// DELETE USER - DELETE /api/users/:id (admin only)
+
 router.delete("/:id", adminAuth, async (req, res) => {
   const id = req.params.id;
 
@@ -82,18 +101,6 @@ router.delete("/:id", adminAuth, async (req, res) => {
   }
 });
 
-// GET patients only
-router.get("/patients", async (req, res) => {
-  try {
-    const result = await db.query(
-      `SELECT id, name, email, phone, role, status, care_center_id, created_at
-       FROM users WHERE role = 'patient' ORDER BY id`
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Database error" });
-  }
-});
+
 
 export default router;
