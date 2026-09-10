@@ -1,6 +1,3 @@
-
-
-
 # AssistLink Server
 
 This is the backend server for AssistLink — a full-stack web application that manages assistive device requests for patients, care centers, engineers, and administrators.
@@ -38,6 +35,8 @@ psql -U postgres -d assistlink_db -f schema.sql
 
 ### 3. Create a `.env` file in the root folder
 
+Copy `.env.sample` to `.env` and fill in your values:
+
 ```
 DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/assistlink_db
 PORT=5000
@@ -59,7 +58,7 @@ assistlink-server/
 ├── db/
 │   └── db.js               # PostgreSQL connection
 ├── middleware/
-│   └── auth.js             # Role-based auth (adminAuth, careCenterAuth, engineerAuth)
+│   └── auth.js             # Role-based auth (adminAuth, careCenterAuth, engineerAuth, careCenterOrEngineerAuth)
 ├── routes/
 │   ├── auth.js             # Signup & Login
 │   ├── users.js            # User CRUD
@@ -68,7 +67,8 @@ assistlink-server/
 │   └── engineers.js        # Engineer CRUD
 ├── schema.sql              # Database schema + sample data
 ├── server.js               # Main Express server
-└── .env                    # Environment variables
+├── .env.sample             # Template for environment variables
+└── .env                    # Local environment variables (not committed)
 ```
 
 ---
@@ -76,8 +76,6 @@ assistlink-server/
 # API Endpoints
 
 The API runs on **http://localhost:5000**
-
----
 
 ## Auth Routes
 
@@ -145,13 +143,11 @@ Base URL: `/api/auth`
 }
 ```
 
----
-
 ## User Routes
 
 Base URL: `/api/users`
 
-**Admin routes require header:** `x-role: admin`
+Admin routes require header: `x-role: admin`
 
 | Method | Endpoint      | Description                  | Auth   |
 |--------|---------------|------------------------------|--------|
@@ -160,40 +156,6 @@ Base URL: `/api/users`
 | GET    | `/:id`        | Get user by ID               | none   |
 | PUT    | `/:id`        | Update user                  | admin  |
 | DELETE | `/:id`        | Delete user                  | admin  |
-
-### GET `/api/users`
-
-**Headers:** `x-role: admin`
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Admin User",
-    "email": "admin@assistlink.com",
-    "role": "admin",
-    "status": "active"
-  }
-]
-```
-
-### GET `/api/users/patients`
-
-**Response:**
-```json
-[
-  {
-    "id": 8,
-    "name": "Sarah Johnson",
-    "email": "sarah.johnson@email.com",
-    "phone": "+254 712 345 678",
-    "role": "patient",
-    "status": "active",
-    "care_center_id": 1
-  }
-]
-```
 
 ### PUT `/api/users/:id`
 
@@ -215,21 +177,19 @@ Base URL: `/api/users`
 
 No request body needed.
 
----
-
 ## Request Routes
 
 Base URL: `/api/requests`
 
-| Method | Endpoint                     | Description                       | Auth        |
-|--------|------------------------------|-----------------------------------|-------------|
-| GET    | `/`                          | Get all requests                  | none        |
-| GET    | `/patient/:patientId`        | Get requests by patient           | none        |
-| GET    | `/engineer/:userId`          | Get requests by engineer          | none        |
-| GET    | `/:id`                       | Get request by ID                 | none        |
-| POST   | `/`                          | Create new request                | none        |
-| PUT    | `/:id/status`                | Update request status             | care center |
-| POST   | `/:id/measurements`          | Add measurements to request       | none        |
+| Method | Endpoint                     | Description                       | Auth                |
+|--------|------------------------------|-----------------------------------|---------------------|
+| GET    | `/`                          | Get all requests                  | none                |
+| GET    | `/patient/:patientId`        | Get requests by patient           | none                |
+| GET    | `/engineer/:userId`          | Get requests by engineer          | none                |
+| GET    | `/:id`                       | Get request by ID                 | none                |
+| POST   | `/`                          | Create new request                | none                |
+| PUT    | `/:id/status`                | Update request status             | care center / engineer |
+| POST   | `/:id/measurements`          | Add measurements to request       | none                |
 
 ### POST `/api/requests`
 
@@ -247,9 +207,9 @@ Base URL: `/api/requests`
 
 ### PUT `/api/requests/:id/status`
 
-**Headers:** `x-role: care-center`
+**Headers:** `x-role: care-center` OR `x-role: engineer`
 
-**Request Body:**
+**Request Body (Approve):**
 ```json
 {
   "status": "Approved",
@@ -257,10 +217,17 @@ Base URL: `/api/requests`
 }
 ```
 
-Or to reject:
+**Request Body (Reject):**
 ```json
 {
   "status": "Rejected"
+}
+```
+
+**Request Body (Mark Delivered):**
+```json
+{
+  "status": "Delivered"
 }
 ```
 
@@ -277,13 +244,11 @@ Or to reject:
 }
 ```
 
----
-
 ## Care Center Routes
 
 Base URL: `/api/carecenters`
 
-**Admin routes require header:** `x-role: admin`
+Admin routes require header: `x-role: admin`
 
 | Method | Endpoint   | Description                | Auth   |
 |--------|------------|----------------------------|--------|
@@ -309,33 +274,17 @@ Base URL: `/api/carecenters`
 }
 ```
 
-### PUT `/api/carecenters/:id`
-
-**Headers:** `x-role: admin`
-
-**Request Body:**
-```json
-{
-  "name": "Metropolitan Rehab Center",
-  "location": "Nairobi",
-  "phone": "+254 20 123 4567",
-  "description": "Updated description"
-}
-```
-
 ### DELETE `/api/carecenters/:id`
 
 **Headers:** `x-role: admin`
 
 No request body needed.
 
----
-
 ## Engineer Routes
 
 Base URL: `/api/engineers`
 
-**Admin routes require header:** `x-role: admin`
+Admin routes require header: `x-role: admin`
 
 | Method | Endpoint   | Description                | Auth   |
 |--------|------------|----------------------------|--------|
@@ -354,18 +303,6 @@ Base URL: `/api/engineers`
 {
   "userId": 5,
   "specialization": "Prosthetics",
-  "status": "active"
-}
-```
-
-### PUT `/api/engineers/:id`
-
-**Headers:** `x-role: admin`
-
-**Request Body:**
-```json
-{
-  "specialization": "Orthotics",
   "status": "active"
 }
 ```
