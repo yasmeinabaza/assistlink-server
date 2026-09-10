@@ -1,6 +1,6 @@
 import express from "express";
 import db from "../db/db.js";
-import { careCenterAuth } from "../middleware/auth.js";
+import { careCenterOrEngineerAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -117,8 +117,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPDATE REQUEST STATUS - PUT /api/requests/:id/status (care center only)
-router.put("/:id/status", careCenterAuth, async (req, res) => {
+// UPDATE REQUEST STATUS - PUT /api/requests/:id/status (care center + engineer)
+router.put("/:id/status", careCenterOrEngineerAuth, async (req, res) => {
   const id = req.params.id;
   const { status, engineerId } = req.body;
 

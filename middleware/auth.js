@@ -30,3 +30,14 @@ export function engineerAuth(req, res, next) {
     res.status(403).json({ message: "Engineer access only" });
   }
 }
+
+// Allow care center staff OR engineer (for status updates)
+export function careCenterOrEngineerAuth(req, res, next) {
+  const role = req.headers["x-role"];
+  
+  if (role === "care-center" || role === "engineer" || role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied" });
+  }
+}
